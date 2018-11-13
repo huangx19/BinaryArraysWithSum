@@ -1,3 +1,5 @@
+import java.util.*;
+
 class Solution {
     private int getCount(int[] arr, int l, int r) {
         int rCount = 1;
@@ -32,6 +34,18 @@ class Solution {
     }
     
     private int[] findNextMatch(int[] arr, int S, int l, int r) {
+
+    	if (S == 0 || S == 1) {
+    		r++;
+    		while (r < arr.length && arr[r] != S) 
+    			r++;
+
+    		if (r == arr.length)
+    			return null;
+
+    		return new int[]{r, r};
+    	}
+
         int sum = S - 1;
         r++;
         l++;
@@ -53,34 +67,84 @@ class Solution {
     }
     
     public int numSubarraysWithSum(int[] A, int S) {
-        int[] match = findFirstMatch(A, S);
-        System.out.println("First Match: " + match[0] + "," + match[1]);
-        
-        if (match == null)
-            return 0;
-        
-        int sum = getCount(A, match[0], match[1]);
-        
-        match = findNextMatch(A, S, match[0], match[1]);
-       	if (match != null)
-        	System.out.println("Next Match: " + match[0] + "," + match[1]);
-        while (match != null) {
-            sum += getCount(A, match[0], match[1]);
-            match = findNextMatch(A, S, match[0], match[1]);
-            if (match != null)
-            	System.out.println("Next Match: " + match[0] + "," + match[1]);
+    	if (S == 0) {
+    		int r = 0;
+            int l = 0;
+            int sum = 0;
+            for (; r < A.length; r++) {
+                if (A[r] == 0 && A[l] != 0) {
+                    l = r;
+                }
+                else if (A[r] != 0 && A[l] == 0) {
+                    int n = r - l;
+                    sum  += n*(n+1)/2;
+                    l = r;
+                }
+            }
+
+            if (A[l] == 0) {
+                int n = r - l;
+                sum += n*(n+1)/2;
+            }
+
+            return sum;
+    	}
+
+
+        int l = 0;
+        int r = 0;
+        int lCount = 1;
+        int rCount = 1;
+        int sum = 0;
+        int total = 0;
+        for (; r < A.length; r++) {
+            sum += A[r];
+            if (A[r] == 1 && sum == S) {
+                lCount = 1;
+                rCount = 1;
+                while (A[l] != 1) {
+                    lCount++;
+                    l++;
+                }
+            }
+            else if (A[r] == 0 && sum == S) {
+                rCount ++;
+            }
+            else if (A[r] == 1 && sum > S) {
+                total += rCount * lCount;
+                rCount = 1;
+                l++;
+                lCount = 1;
+                sum -= A[l];
+                while (sum > S) {
+                    l++;
+                    lCount ++;
+                    sum -= A[l];
+                }
+            }
         }
-        
-        return sum;
-        
+        if (sum == S)
+            total += rCount * lCount;
+        return total;
     }
 
     public static void main(String[] args) {
-    	int[] A = new int[args.length-1];
-    	int S = Integer.parseInt(args[args.length-1]);
-    	for (int i = 0; i < A.length; i++)
-    		A[i] = Integer.parseInt(args[i]);
-    	Solution solution = new Solution();
-    	System.out.println(solution.numSubarraysWithSum(A, S));
+        int[] a = {1,1,1,1,1};
+        printResult(a, 1);
+        printResult(a, 2);
+        printResult(a, 3);
+        printResult(a, 4);
+        printResult(a, 5);
+        printResult(a, 6);
+        printResult(a, 7);
+        printResult(a, 0);
+
+        int[] b = {1, 1, 1, 0, 0, 1, 1, 1, 0, 0};
+        printResult(b, 3);
+    }
+
+    private static void printResult(int[] a, int target) {
+        Solution solution = new Solution();
+        System.out.println(Arrays.toString(a) + " target:" + target + " count:" + solution.numSubarraysWithSum(a, target));
     }
 }
